@@ -1,55 +1,56 @@
-# Cambia Credenciales (SSH / Git)
+# Credential Switcher (SSH / Git)
 
-Gestor **portable** de perfiles de credenciales SSH/Git. Permite alternar entre
-distintas identidades (claves SSH + `~/.gitconfig`) con un clic, haciendo **backup
-automático** de todo lo que reemplaza. Tiene **interfaz gráfica** y **modo consola**,
-y funciona en **Windows, macOS y Linux**.
-
----
-
-## ¿Por qué?
-
-Si usás varias identidades de Git (trabajo, personal, otra cuenta), cada una tiene su
-par de claves SSH y, normalmente, su propio `user.name` / `user.email` (y a veces más
-configuración de git). Cambiar a mano implica copiar archivos y editar el `.gitconfig`
-cada vez. Este programa lo automatiza y, sobre todo, **nunca pisa nada sin antes
-hacer una copia de seguridad**.
+A **portable** SSH/Git credential profile manager. It lets you switch between
+different identities (SSH keys + `~/.gitconfig`) in one click, with **automatic
+backups** before anything is replaced. It includes a **GUI** and **CLI**, and runs on
+**Windows, macOS, and Linux**.
 
 ---
 
-## Cómo funciona (modelo)
+## Why?
 
-- `~/.ssh` es la **credencial activa** (la que usa git/ssh ahora mismo).
-- Cada **subcarpeta** de `~/.ssh` (salvo `_backups`) es un **perfil** guardado: tiene
-  sus propias claves (`id_rsa`, `id_ed25519`, …), su `known_hosts` y, opcionalmente,
-  un `.gitconfig`.
-- **Activar** un perfil hace, en orden:
-  1. **Backup** de la credencial activa + `~/.gitconfig` en `~/.ssh/_backups/<fecha>_.../`.
-  2. **Limpia** las claves anteriores de la raíz (para no mezclar `id_rsa` con `id_ed25519`).
-  3. **Copia** las claves y `known_hosts` del perfil a la raíz de `~/.ssh`.
-  4. Si el perfil trae `.gitconfig`, **reemplaza** el `~/.gitconfig` global (con backup).
-     Si no trae, **deja el actual y avisa**.
-  5. En Linux/Mac aplica permisos correctos (`600`/`644`/`700`); en Windows no aplica.
-
-> Un perfil se considera "activo" cuando su clave pública coincide con la que está en
-> la raíz de `~/.ssh`. Si tu credencial actual no está guardada como perfil, aparecerá
-> como *"no identificado"* — guardala con **+ Nuevo perfil** / `--save`.
+If you use multiple Git identities (work, personal, another account), each one
+has its own SSH key pair and usually its own `user.name` / `user.email` (and sometimes
+more Git config). Doing this manually means copying files and editing `.gitconfig`
+every time. This tool automates it and, most importantly, **never overwrites anything
+without creating a backup first**.
 
 ---
 
-## Requisitos
+## How it works (model)
+
+- `~/.ssh` is the **active credential** (what Git/SSH uses right now).
+- Each **subfolder** inside `~/.ssh` (except `_backups`) is a saved **profile** with
+  its own keys (`id_rsa`, `id_ed25519`, etc.), `known_hosts`, and optional `.gitconfig`.
+- **Activating** a profile does, in order:
+  1. **Backs up** the current active credential + `~/.gitconfig` into
+     `~/.ssh/_backups/<timestamp>_.../`.
+  2. **Cleans** old keys from `~/.ssh` root (to avoid mixing `id_rsa` with `id_ed25519`).
+  3. **Copies** keys and `known_hosts` from the selected profile into `~/.ssh`.
+  4. If the profile has a `.gitconfig`, it **replaces** global `~/.gitconfig`
+     (with backup). If not, it **keeps current** and shows a warning.
+  5. On Linux/macOS it applies SSH permissions (`600` / `644` / `700`); on Windows
+     this step is skipped.
+
+> A profile is considered "active" when its public key matches the one currently in
+> `~/.ssh`. If your current credential is not saved as a profile, it appears as
+> *"(not identified)"*. Save it first with **+ New profile** / `--save`.
+
+---
+
+## Requirements
 
 - **Python 3.10+**
-- Para la GUI: `customtkinter` → `pip install -r requirements.txt`
-  (la CLI funciona solo con la librería estándar)
+- For GUI: `customtkinter` -> `pip install -r requirements.txt`
+  (CLI works with standard library only)
 
-### Instalar Python (Windows, con winget)
+### Install Python (Windows, with winget)
 
 ```powershell
 winget install Python.Python.3.12
 ```
 
-Luego, en la carpeta del proyecto:
+Then in the project folder:
 
 ```powershell
 pip install -r requirements.txt
@@ -57,106 +58,107 @@ pip install -r requirements.txt
 
 ---
 
-## Uso — Interfaz gráfica (GUI)
+## Usage - Graphical Interface (GUI)
 
-Para abrirla **sin ventana de consola de fondo**, usá cualquiera de estos:
+To open it **without a console window in the background**, use any of these:
 
-| Lanzador | Qué hace |
+| Launcher | What it does |
 |---|---|
-| **`Cambia Credenciales.vbs`** | Doble clic → abre **solo** la GUI (cero parpadeo). El más limpio. |
-| **`ejecutar.bat`** | Doble clic → abre la GUI con `pythonw` (parpadeo brevísimo de cmd). |
-| `pythonw app.py` | Manual, sin consola. |
-| `python app.py` | Manual, **con** consola (útil para ver errores). |
+| **`Cambia Credenciales.vbs`** | Double click -> opens **only** the GUI (no flicker). Best option. |
+| **`ejecutar.bat`** | Double click -> opens GUI with `pythonw` (brief cmd flicker). |
+| `pythonw app.py` | Manual, no console. |
+| `python app.py` | Manual, **with** console (useful for debugging). |
 
-> 💡 Para un acceso directo con ícono: clic derecho sobre `Cambia Credenciales.vbs`
-> → *Crear acceso directo* → movelo al escritorio.
+For a desktop shortcut with icon: right click `Cambia Credenciales.vbs` ->
+*Create shortcut* -> move it to Desktop.
 
-La ventana tiene dos pestañas:
+The window has two tabs:
 
-- **Perfiles** — lista todos los perfiles y marca el activo (● ACTIVO). Botones:
-  **Activar**, **+ Nuevo perfil** (guarda la credencial activa), **Renombrar**,
-  **Borrar**. Seleccioná un perfil con el radio button para renombrar/borrar.
-- **Git Config** — muestra y permite **editar y guardar** el `~/.gitconfig` global
-  (con backup), y ver el `.gitconfig` de cada perfil para comparar.
+- **Profiles**: lists all profiles and marks the active one (`ACTIVE`). Buttons:
+  **Activate**, **+ New profile** (save current active credential), **Rename**,
+  **Delete**. Select a profile with the radio button for rename/delete.
+- **Git Config**: shows and allows editing/saving global `~/.gitconfig`
+  (with backup), and viewing each profile `.gitconfig` for comparison.
 
 ---
 
-## Uso — Consola (CLI)
+## Usage - Command Line (CLI)
 
-Sin argumentos abre la GUI; con argumentos entra en modo consola:
+Without arguments it opens GUI; with arguments it runs in CLI mode:
 
-| Comando | Acción |
+| Command | Action |
 |---|---|
-| `python app.py --list` | Lista los perfiles y marca el activo (`*`) |
-| `python app.py --status` | Perfil activo + `user.name`/`email` del gitconfig |
-| `python app.py --use NOMBRE` | Activa un perfil (con backup) |
-| `python app.py --save NOMBRE` | Guarda la credencial activa como perfil nuevo |
-| `python app.py --rename VIEJO NUEVO` | Renombra un perfil |
-| `python app.py --delete NOMBRE` | Borra un perfil |
-| `python app.py --show-gitconfig [PERFIL]` | Muestra el gitconfig global o el de un perfil |
+| `python app.py --list` | List profiles and mark active one (`*`) |
+| `python app.py --status` | Active profile + `user.name` / `user.email` from gitconfig |
+| `python app.py --use NAME` | Activate a profile (with backup) |
+| `python app.py --save NAME` | Save current active credential as a new profile |
+| `python app.py --rename OLD NEW` | Rename a profile |
+| `python app.py --delete NAME` | Delete a profile |
+| `python app.py --show-gitconfig [PROFILE]` | Show global gitconfig or profile gitconfig |
 
-Ejemplos:
+Examples:
 
 ```powershell
 python app.py --list
-python app.py --save sanatorio-actual   # guardá tu credencial actual primero
-python app.py --use copia               # cambia a la identidad "copia"
+python app.py --save current-sanatorio   # save your current credential first
+python app.py --use backup               # switch to identity "backup"
 python app.py --status
 ```
 
 ---
 
-## Backups y restauración
+## Backups and restore
 
-Cada operación que pisa algo deja una copia en `~/.ssh/_backups/<fecha_hora>_<motivo>/`
-(claves + `known_hosts` + `.gitconfig`). Para volver atrás, podés:
+Every operation that overwrites files creates a copy in
+`~/.ssh/_backups/<timestamp>_<reason>/`
+(keys + `known_hosts` + `.gitconfig`). To roll back, you can:
 
-- Activar de nuevo el perfil anterior (si lo tenías guardado), o
-- Copiar a mano los archivos desde la carpeta de backup correspondiente.
+- Re-activate the previous profile (if saved), or
+- Manually copy files from the corresponding backup folder.
 
-La carpeta `_backups` está **excluida** de la detección de perfiles.
+The `_backups` folder is **excluded** from profile detection.
 
 ---
 
-## Empaquetar a ejecutable portable (.exe)
+## Package as portable executable (.exe)
 
-Para distribuirlo sin que el destino tenga Python instalado:
+To distribute it without requiring Python on target machines:
 
 ```powershell
 pip install pyinstaller
-pyinstaller --onefile --windowed --name cambia-credenciales app.py
+pyinstaller --onefile --windowed --name credential-switcher app.py
 ```
 
-Genera `dist/cambia-credenciales.exe`, que **incluye el intérprete de Python y las
-librerías**. `--windowed` arma el binario **sin consola** (ideal para la GUI).
+This creates `dist/credential-switcher.exe`, which includes Python runtime and
+libraries. `--windowed` builds it **without console** (ideal for GUI).
 
-> El binario es **por sistema operativo**: para macOS/Linux hay que correr el mismo
-> comando en cada uno. El *código fuente* es el mismo en los tres.
-> Si querés usar también la CLI desde el `.exe`, compilá **sin** `--windowed`
-> (o generá dos binarios, uno para GUI y otro para consola).
+The binary is **OS-specific**: build on each target OS (Windows/macOS/Linux).
+Source code stays the same across all three.
+If you also want CLI from `.exe`, build **without** `--windowed`
+(or build two binaries: GUI and console).
 
 ---
 
-## Estructura del proyecto
+## Project structure
 
-```
-app.py                    Punto de entrada: GUI (sin args) / CLI (con args)
-core.py                   Lógica: detección de perfiles, backup, activar, gitconfig (sin UI)
-gui.py                    Ventana customtkinter (pestañas Perfiles / Git Config)
-cli.py                    Comandos de consola (argparse)
-requirements.txt          Dependencias (customtkinter)
-Cambia Credenciales.vbs   Lanzador de GUI sin consola (recomendado)
-ejecutar.bat              Lanzador de GUI con pythonw
-README.md                 Este archivo
+```text
+app.py                    Entry point: GUI (no args) / CLI (with args)
+core.py                   Logic: profiles, backup, activate, gitconfig (no UI)
+gui.py                    customtkinter UI (Profiles / Git Config tabs)
+cli.py                    Console commands (argparse)
+requirements.txt          Dependencies (customtkinter)
+Cambia Credenciales.vbs   GUI launcher without console (recommended)
+ejecutar.bat              GUI launcher with pythonw
+README.md                 This file
 ```
 
-`core.py` no depende de la UI: tanto la GUI como la CLI llaman a las mismas funciones,
-así que el comportamiento es idéntico en ambos modos.
+`core.py` is UI-independent: both GUI and CLI call the same functions, so behavior
+is consistent in both modes.
 
 ---
 
-## Notas de seguridad
+## Security notes
 
-- El programa **solo** lee/escribe dentro de `~/.ssh` y `~/.gitconfig`.
-- Nunca muestra el contenido de las **claves privadas** (`id_*` sin `.pub`).
-- En Linux/Mac corrige los permisos de las claves automáticamente al activar un perfil.
+- The program only reads/writes inside `~/.ssh` and `~/.gitconfig`.
+- It never prints private key contents (`id_*` without `.pub`).
+- On Linux/macOS it automatically fixes SSH file permissions when activating a profile.
