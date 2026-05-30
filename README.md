@@ -100,7 +100,7 @@ Examples:
 
 ```powershell
 python app.py --list
-python app.py --save current-sanatorio   # save your current credential first
+python app.py --save current-ssh-key   # save your current credential first
 python app.py --use backup               # switch to identity "backup"
 python app.py --status
 ```
